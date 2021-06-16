@@ -1,0 +1,71 @@
+<template>
+  <div :class="style.main">
+    <Header :class="style.head" @modal="modal"/>
+    <p :class="style.back"><i :class="style.icon"></i>Programmes</p>
+    <p :class="style.title"> {{programData.title}} </p>
+    <p :class="style.info"> {{programData.info}} </p>
+    <p :class="[style.deadline,{slash:over}]"> Application deadline: <span class="text-black"> {{programData.deadline}} within 12:00 PM </span> </p>
+  </div>  
+</template>
+
+<script>
+
+  import {defineAsyncComponent} from "vue";
+  const Header = defineAsyncComponent(() =>
+    import ("/src/components/Header.vue"));
+    
+  export default {
+    name: "SectionOne",
+    components:{Header},
+    props:['title', 'info', 'deadline','over'],
+    data(){ return{
+        nameOutput:'',
+        programData: [],
+        isOver: false,
+        date:'',
+        style:{
+          main:"pt-12 bg-white flex flex-col justify-between",
+          back:"hover:text-blue-900 my-12 px-12 text-2xl text-secondary font-bold",
+          icon:"mr-4 fas fa-chevron-left",
+          head:"px-24",
+          title:"px-24 mt-8 font-semibold text-5xl text-blue-900 mb-3",
+          info:"px-24 mb-24 text-2xl leading-relaxed font-normal tracking-wider w-2/3",
+          deadline:"mb-12 px-24 text-xl text-blue-900 font-semibold"          
+        }
+    }},
+    mounted(){
+      
+
+        console.log(this.programData)
+    },
+    created: function (){
+      
+      var DateTime = luxon.DateTime;
+      var now = DateTime.now().toLocaleString({ locale: 'en-gb' });
+      this.deadline > now  ? this.isOver=false : this.isOver=true; 
+      const hate = DateTime.fromISO("2016-05-25");
+      var nameOutput = ''
+      for (var i = 0; i < this.$route.params.title.length; i++) {
+        (this.$route.params.title[i] == "-" ?
+          nameOutput += " " : nameOutput += this.$route.params.title[i]
+        )
+      } 
+      fetch('https://api.npoint.io/6e3818d3fae2f180e31e')
+      .then(res => res.json())
+      .then(data => data.find(element => element.title == nameOutput))
+      .then(found => this.programData = found)
+      .catch(err => console.log(err.message))
+      console.log(nameOutput)
+    },
+    
+    methods:{
+      modal(x){this.$emit('modal',x)},
+    },
+  };
+</script>
+
+<style scoped>
+  .slash{
+    text-decoration: line-through;
+  }
+</style>
